@@ -22,6 +22,38 @@ class Player(CircleShape):
             color = "white",
             points = self.triangle(),
             width  = constants.LINE_WIDTH
-            
             )
+
+    def update(self, dt: float) -> None:
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_a]:
+            ## Should rotate left
+            self.rotate(-dt)
+            
+        if keys[pygame.K_d]:
+            ## Should rotate right
+            self.rotate(dt)
+        
+        if keys[pygame.K_w]:
+            self.move(dt)
+        
+        if keys[pygame.K_s]:
+            self.move(-dt)
+        
+        
+
+    def rotate(self, dt) -> None:
+        self.rotation += constants.PLAYER_TURN_SPEED * dt 
+    
+
+    def move(self, dt) -> None:
+        unit_vector = pygame.Vector2(0, 1)
+        ## Vector pointing the same direction as player
+        rotated_vector = unit_vector.rotate(self.rotation)
+        rotated_with_speed_vector = rotated_vector * constants.PLAYER_SPEED * dt
+        self.position += rotated_with_speed_vector
+
+
+
 
