@@ -11,10 +11,22 @@ def main():
     pygame.time.Clock()
     
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    
+    
+    ### Clock
     clock = pygame.time.Clock()
     dt = 0.0
 
-    player = Player(
+
+    ## Groups
+    updatable = pygame.sprite.Group()
+    drawable = pygame.sprite.Group()
+    
+    ## All future instance of Player class will be added to updatable and drawable
+    Player.containers = (updatable, drawable)
+
+
+    player_1 = Player(
         x = SCREEN_WIDTH / 2,
         y = SCREEN_HEIGHT / 2
         )
@@ -33,8 +45,18 @@ def main():
         screen.fill("black")
         
         ## Drawing the player and updating the player
-        player.draw(screen)
-        player.update(dt)
+        ## player.draw(screen)
+        ## player.update(dt)
+
+        for player in drawable:
+            ## Drawing each Player instance
+            player.draw(screen)
+
+        ## Updating all instances of Player class
+        updatable.update(dt)
+
+
+
 
         ## Screen update
         pygame.display.flip()
