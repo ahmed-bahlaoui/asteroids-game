@@ -28,18 +28,18 @@ class Player(CircleShape):
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            ## Should rotate left
+        rotating_left = keys[pygame.K_a] or keys[pygame.K_LEFT]
+        rotating_right = keys[pygame.K_d] or keys[pygame.K_RIGHT]
+        moving_forward = keys[pygame.K_w] or keys[pygame.K_UP]
+        moving_backward = keys[pygame.K_s] or keys[pygame.K_DOWN]
+
+        if rotating_left:
             self.rotate(-dt)
-            
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            ## Should rotate right
+        if rotating_right:
             self.rotate(dt)
-        
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
+        if moving_forward:
             self.move(dt)
-        
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        if moving_backward:
             self.move(-dt)
         
         
