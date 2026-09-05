@@ -17,6 +17,7 @@ class Player(CircleShape):
         return [a, b, c]
     
     def draw(self, screen: pygame.Surface) -> None:
+        '''Draws the player to the screen'''
         pygame.draw.polygon(
             surface = screen,
             color = "white",
@@ -27,18 +28,18 @@ class Player(CircleShape):
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             ## Should rotate left
             self.rotate(-dt)
             
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             ## Should rotate right
             self.rotate(dt)
         
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.move(dt)
         
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.move(-dt)
         
         
