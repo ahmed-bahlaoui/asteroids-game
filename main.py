@@ -56,11 +56,17 @@ def main():
     )
 
     ##### ASSETS
-    bg_raw = pygame.image.load(ASSETS_DIR / "background.png").convert()
-    bg_image = pygame.transform.smoothscale(bg_raw, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    bg_rect = bg_image.get_rect(topleft=(0, 0))
+
+    #### SPLASH SCREEN
+    splash_raw = pygame.image.load(ASSETS_DIR / "splash.png").convert()
+    splash_bg = pygame.transform.smoothscale(splash_raw, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    splash_rect = splash_bg.get_rect(topleft=(0, 0))
     dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
     dim.fill((0, 0, 0, 120))  # 0=transparent, 255=opaque
+
+    ##### GAME BACKGROUND
+    game_bg_raw = pygame.image.load(ASSETS_DIR / "background.png").convert()
+    game_bg = pygame.transform.smoothscale(game_bg_raw, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
     if (pygame.time.get_ticks() // 500) % 2 == 0:
         screen.blit(prompt_surf, prompt_rect)
@@ -82,7 +88,7 @@ def main():
 
         if game_state == "splash":
             blink_on = (pygame.time.get_ticks() // 500) % 2 == 0
-            screen.blit(bg_image, bg_rect)
+            screen.blit(splash_bg, splash_rect)
             screen.blit(dim, (0, 0))
             screen.blit(title_surf, title_rect)
             # blit image here
@@ -90,6 +96,10 @@ def main():
                 screen.blit(prompt_surf, prompt_rect)
             updatable.update(dt)
         else:
+            ### Playing
+            screen.blit(game_bg, (0, 0))
+            screen.blit(dim, (0, 0))
+
             for item in drawable:
                 item.draw(screen)
             updatable.update(dt)
