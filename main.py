@@ -1,13 +1,14 @@
 import pygame
 from logger import log_state, log_event
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, ASSETS_DIR
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
-from shot import Shot 
+from shot import Shot
 
 
 import sys
+
 
 def main():
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
@@ -15,38 +16,54 @@ def main():
     print(f"Screen height: {SCREEN_HEIGHT}")
     pygame.init()
     pygame.time.Clock()
-    
+
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    
-    
+
     ### Clock
     clock = pygame.time.Clock()
     dt = 0.0
-
 
     ## Groups
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
-    
+
     ## All future instances of Player class will be added to updatable and drawable groups
     Player.containers = (updatable, drawable)
 
     ## All future instances of Asteroids class will be added to updatable and drawable and asteroids groups
     Asteroid.containers = (asteroids, updatable, drawable)
-
-    AsteroidField.containers  = (updatable,)
-
+    AsteroidField.containers = (updatable,)  # type: ignore
     Shot.containers = (shots, updatable, drawable)
-
     asteroid_field = AsteroidField()
+    player = Player(x=SCREEN_WIDTH / 2, y=SCREEN_HEIGHT / 2)
 
-    player = Player(
-        x = SCREEN_WIDTH / 2,
-        y = SCREEN_HEIGHT / 2
-        )
+    #### GAME STATE
+    game_state = "splash"
 
+    #### FONTS
+    title_font = pygame.font.Font(None, 120)
+    prompt_font = pygame.font.Font(None, 48)
+
+    #### FONT RENDERING
+    title_surf = title_font.render("ASTEROIDS", True, "white")
+    prompt_surf = prompt_font.render("PRESS SPACE TO PLAY", True, "white")
+
+    title_rect = title_surf.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50))
+    prompt_rect = prompt_surf.get_rect(
+        center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 80)
+    )
+
+    ##### ASSETS
+    bg_raw = pygame.image.load(ASSETS_DIR / "background.png").convert()
+    bg_image = pygame.transform.smoothscale(bg_raw, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    bg_rect = bg_image.get_rect(topleft=(0, 0))
+    dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    dim.fill((0, 0, 0, 120))  # 0=transparent, 255=opaque
+
+    if (pygame.time.get_ticks() // 500) % 2 == 0:
+        screen.blit(prompt_surf, prompt_rect)
 
     while True:
         ## Logging the state
@@ -56,44 +73,41 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
+            if game_state == "splash":
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    game_state = "playing"
+                    dt = 0.0
         ## Screen fill
         screen.fill("black")
-        
-        ## Drawing the player and updating the player
-        ## player.draw(screen)
-        ## player.update(dt)
 
-        for item in drawable:
-            ## Drawing each Player instance
-            item.draw(screen)
+        if game_state == "splash":
+            blink_on = (pygame.time.get_ticks() // 500) % 2 == 0
+            screen.blit(bg_image, bg_rect)
+            screen.blit(dim, (0, 0))
+            screen.blit(title_surf, title_rect)
+            # blit image here
+            if blink_on:
+                screen.blit(prompt_surf, prompt_rect)
+            updatable.update(dt)
+        else:
+            for item in drawable:
+                item.draw(screen)
+            updatable.update(dt)
+            for asteroid in asteroids:
+                for shot in shots:
+                    if asteroid.collides_with(shot):
+                        log_event("asteroid_shot")
+                        asteroid.split()
+                        shot.kill()
 
-        ## Updating all instances of Player class
-        updatable.update(dt)
-    
-        for asteroid in asteroids:
-            for shot in shots:
-                if asteroid.collides_with(shot):
-                    log_event("asteroid_shot")
-                    asteroid.split()
-                    shot.kill()
-            
-            if asteroid.collides_with(player):
-                log_event("Player hit!")
-                sys.exit("Game over!")
-            
-            
-            
+                    if asteroid.collides_with(player):
+                        log_event("Player hit!")
+                        sys.exit("Game over!")
+
         ## Screen update
         pygame.display.flip()
-
-        ## Update dt
         dt = clock.tick(60) / 1000
-        ## Logging dt:
-        #  print(f"dt value: {dt}")
-        
 
 
 if __name__ == "__main__":
     main()
-

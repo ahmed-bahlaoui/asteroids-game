@@ -3,12 +3,13 @@ from circleshape import CircleShape
 import constants
 from shot import Shot
 
+
 class Player(CircleShape):
     def __init__(self, x, y):
         super().__init__(x, y, constants.PLAYER_RADIUS)
         self.rotation = 0
         self.cooldown_timer = 0
-    
+
     # in the Player class
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -17,15 +18,15 @@ class Player(CircleShape):
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
         return [a, b, c]
-    
+
     def draw(self, screen: pygame.Surface) -> None:
-        '''Draws the player to the screen'''
+        """Draws the player to the screen"""
         pygame.draw.polygon(
-            surface = screen,
-            color = "white",
-            points = self.triangle(),
-            width  = constants.LINE_WIDTH
-            )
+            surface=screen,
+            color="white",
+            points=self.triangle(),
+            width=constants.LINE_WIDTH,
+        )
 
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
@@ -54,13 +55,8 @@ class Player(CircleShape):
                 self.cooldown_timer = constants.PLAYER_SHOOT_COOLDOWN_SECONDS
         self.cooldown_timer -= dt
 
-            
-        
-        
-
     def rotate(self, dt) -> None:
-        self.rotation += constants.PLAYER_TURN_SPEED * dt 
-    
+        self.rotation += constants.PLAYER_TURN_SPEED * dt
 
     def move(self, dt) -> None:
         unit_vector = pygame.Vector2(0, 1)
@@ -70,8 +66,7 @@ class Player(CircleShape):
         self.position += rotated_with_speed_vector
 
     def shoot(self):
-        shot = Shot(self.position.x ,self.position.y)
-        shot.velocity = pygame.Vector2(0,1).rotate(self.rotation) * constants.PLAYER_SHOOT_SPEED
-
-
-
+        shot = Shot(self.position.x, self.position.y)
+        shot.velocity = (
+            pygame.Vector2(0, 1).rotate(self.rotation) * constants.PLAYER_SHOOT_SPEED
+        )
