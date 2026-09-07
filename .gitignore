@@ -9,7 +9,10 @@ wheels/
 # Virtual environments
 .venv
 
+## Build and dist
+build/
+dist/
+
 # Game state
 game_state.jsonl
-
 game_events.jsonl

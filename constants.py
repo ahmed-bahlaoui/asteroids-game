@@ -1,4 +1,6 @@
 from pathlib import Path
+import sys
+
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -15,8 +17,16 @@ PLAYER_SHOOT_COOLDOWN_SECONDS = 0.3
 PLAYER_INITIAL_ROTATION = 0
 PLAYER_INITIAL_COOLDOWN_TIMER = 0
 COOLDOWN_READY_THRESHOLD = 0
-ASSETS_DIR = Path.cwd() / "assets"
-FONTS_DIR = Path.cwd() / "fonts"
+
+def _base_path() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) #type: ignore
+    return Path(__file__).parent
+
+BASE_DIR = _base_path()
+
+ASSETS_DIR = BASE_DIR / "assets"
+FONTS_DIR = BASE_DIR / "fonts"
 
 ### DIRECTION UNIT OFFSETS (for edge / movement vectors)
 DIRECTION_POSITIVE = 1
