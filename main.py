@@ -12,10 +12,15 @@ def main():
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
+    pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
     pygame.init()
     pygame.time.Clock()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    shoot_sound = pygame.mixer.Sound(ASSETS_DIR / "pew.wav")
+    shoot_sound.set_volume(0.4)  # 0.0 - 1.0
+    # Player.shoot_sound = shoot_sound
 
     ### Clock
     clock = pygame.time.Clock()
@@ -35,7 +40,7 @@ def main():
     AsteroidField.containers = (updatable,)  # type: ignore
     Shot.containers = (shots, updatable, drawable)
     asteroid_field = AsteroidField()
-    player = Player(x=SCREEN_WIDTH / 2, y=SCREEN_HEIGHT / 2)
+    player = Player(x=SCREEN_WIDTH / 2, y=SCREEN_HEIGHT / 2, shoot_sound=shoot_sound)
 
     #### GAME STATE
     game_state = "splash"

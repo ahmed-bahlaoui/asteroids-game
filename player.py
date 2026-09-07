@@ -5,10 +5,11 @@ from shot import Shot
 
 
 class Player(CircleShape):
-    def __init__(self, x, y):
+    def __init__(self, x, y, shoot_sound = None):
         super().__init__(x, y, constants.PLAYER_RADIUS)
         self.rotation = 0
         self.cooldown_timer = 0
+        self.shoot_sound = shoot_sound
 
     # in the Player class
     def triangle(self) -> list[pygame.Vector2]:
@@ -70,3 +71,5 @@ class Player(CircleShape):
         shot.velocity = (
             pygame.Vector2(0, 1).rotate(self.rotation) * constants.PLAYER_SHOOT_SPEED
         )
+        if self.shoot_sound is not None:
+            self.shoot_sound.play()
