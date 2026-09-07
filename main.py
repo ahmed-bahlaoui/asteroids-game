@@ -1,12 +1,10 @@
 import pygame
 from logger import log_state, log_event
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, ASSETS_DIR
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, ASSETS_DIR, FONTS_DIR
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
-
-
 import sys
 
 
@@ -43,7 +41,7 @@ def main():
     game_state = "splash"
 
     #### FONTS
-    title_font = pygame.font.Font(None, 120)
+    title_font = pygame.font.Font(FONTS_DIR / "HyperspaceBold-GM0g.ttf", 120)
     prompt_font = pygame.font.Font(None, 48)
 
     #### FONT RENDERING
