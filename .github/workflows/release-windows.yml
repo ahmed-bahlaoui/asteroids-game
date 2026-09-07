@@ -1,0 +1,43 @@
+name: windows-release
+
+on:
+  push:
+    tags:
+      - "v*"          # git tag v0.1.0 && git push origin v0.1.0
+  workflow_dispatch:  # manual Run workflow button
+
+permissions:
+  contents: write   # required to create the Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Build exe
+        run: |
+          uv run pyinstaller --clean --noconfirm --onedir --windowed --name Asteroids `
+            --add-data "assets;assets" `
+            --add-data "fonts;fonts" `
+            main.py
+
+      - name: Zip bundle
+        run: Compress-Archive -Path dist/Asteroids/* -DestinationPath Asteroids-windows.zip
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Asteroids-windows.zip
+          generate_release_notes: true
