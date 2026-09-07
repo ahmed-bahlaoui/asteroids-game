@@ -7,6 +7,10 @@ I made this little game by following the course on boot.dev called: **Build Aste
 
 !["Splash screen"](assets/asteroids.gif)
 
+## Game over screen
+!["Game over screen"](assets/game_over.gif)
+
+
 
 ## Get started:
 

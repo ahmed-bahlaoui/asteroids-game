@@ -8,19 +8,28 @@ import logger
 class Player(CircleShape):
     def __init__(self, x, y, shoot_sound=None):
         super().__init__(x, y, constants.PLAYER_RADIUS)
-        self.rotation = 0
-        self.cooldown_timer = 0
+        self.rotation = constants.PLAYER_INITIAL_ROTATION
+        self.cooldown_timer = constants.PLAYER_INITIAL_COOLDOWN_TIMER
         self.shoot_sound = shoot_sound
 
-        raw_image = pygame.image.load(constants.ASSETS_DIR / "player.png").convert_alpha()
-        size = self.radius * 2.2
+        raw_image = pygame.image.load(
+            constants.ASSETS_DIR / "player.png"
+        ).convert_alpha()
+        size = self.radius * constants.PLAYER_SPRITE_SCALE_FACTOR
         self.image_original = pygame.transform.smoothscale(raw_image, (size, size))
-
 
     # in the Player class
     def triangle(self) -> list[pygame.Vector2]:
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
+        forward = pygame.Vector2(
+            constants.PLAYER_FORWARD_X, constants.PLAYER_FORWARD_Y
+        ).rotate(self.rotation)
+        right = (
+            pygame.Vector2(
+                constants.PLAYER_FORWARD_X, constants.PLAYER_FORWARD_Y
+            ).rotate(self.rotation + constants.PLAYER_TRIANGLE_RIGHT_ANGLE)
+            * self.radius
+            / constants.PLAYER_TRIANGLE_WIDTH_DIVISOR
+        )
         a = self.position + forward * self.radius
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
@@ -28,14 +37,11 @@ class Player(CircleShape):
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draws the player to the screen"""
-        # pygame.draw.polygon(
-        #     surface=screen,
-        #     color="white",
-        #     points=self.triangle(),
-        #     width=constants.LINE_WIDTH,
-        # )
 
-        rotated = pygame.transform.rotate(self.image_original, -self.rotation + 180)
+        rotated = pygame.transform.rotate(
+            self.image_original,
+            -self.rotation + constants.PLAYER_SPRITE_ROTATION_OFFSET,
+        )
         rect = rotated.get_rect(center=(self.position.x, self.position.y))
         screen.blit(rotated, rect)
 
@@ -59,7 +65,7 @@ class Player(CircleShape):
             self.move(-dt)
 
         if shooting:
-            if self.cooldown_timer > 0:
+            if self.cooldown_timer > constants.COOLDOWN_READY_THRESHOLD:
                 pass
             else:
                 self.shoot()
@@ -70,7 +76,9 @@ class Player(CircleShape):
         self.rotation += constants.PLAYER_TURN_SPEED * dt
 
     def move(self, dt) -> None:
-        unit_vector = pygame.Vector2(0, 1)
+        unit_vector = pygame.Vector2(
+            constants.PLAYER_FORWARD_X, constants.PLAYER_FORWARD_Y
+        )
         ## Vector pointing the same direction as player
         rotated_vector = unit_vector.rotate(self.rotation)
         rotated_with_speed_vector = rotated_vector * constants.PLAYER_SPEED * dt
@@ -79,7 +87,10 @@ class Player(CircleShape):
     def shoot(self):
         shot = Shot(self.position.x, self.position.y)
         shot.velocity = (
-            pygame.Vector2(0, 1).rotate(self.rotation) * constants.PLAYER_SHOOT_SPEED
+            pygame.Vector2(
+                constants.PLAYER_FORWARD_X, constants.PLAYER_FORWARD_Y
+            ).rotate(self.rotation)
+            * constants.PLAYER_SHOOT_SPEED
         )
         if self.shoot_sound is not None:
             logger.log_event("playing sound")
