@@ -2,14 +2,20 @@ import pygame
 from circleshape import CircleShape
 import constants
 from shot import Shot
+import logger
 
 
 class Player(CircleShape):
-    def __init__(self, x, y, shoot_sound = None):
+    def __init__(self, x, y, shoot_sound=None):
         super().__init__(x, y, constants.PLAYER_RADIUS)
         self.rotation = 0
         self.cooldown_timer = 0
         self.shoot_sound = shoot_sound
+
+        raw_image = pygame.image.load(constants.ASSETS_DIR / "player.png").convert_alpha()
+        size = self.radius * 2.2
+        self.image_original = pygame.transform.smoothscale(raw_image, (size, size))
+
 
     # in the Player class
     def triangle(self) -> list[pygame.Vector2]:
@@ -22,12 +28,16 @@ class Player(CircleShape):
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draws the player to the screen"""
-        pygame.draw.polygon(
-            surface=screen,
-            color="white",
-            points=self.triangle(),
-            width=constants.LINE_WIDTH,
-        )
+        # pygame.draw.polygon(
+        #     surface=screen,
+        #     color="white",
+        #     points=self.triangle(),
+        #     width=constants.LINE_WIDTH,
+        # )
+
+        rotated = pygame.transform.rotate(self.image_original, -self.rotation + 180)
+        rect = rotated.get_rect(center=(self.position.x, self.position.y))
+        screen.blit(rotated, rect)
 
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
@@ -72,4 +82,5 @@ class Player(CircleShape):
             pygame.Vector2(0, 1).rotate(self.rotation) * constants.PLAYER_SHOOT_SPEED
         )
         if self.shoot_sound is not None:
+            logger.log_event("playing sound")
             self.shoot_sound.play()
