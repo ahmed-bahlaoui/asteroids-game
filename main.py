@@ -1,43 +1,11 @@
 import pygame
 from logger import log_state, log_event
-from constants import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    ASSETS_DIR,
-    FONTS_DIR,
-    SCORE_PER_ASTEROID_HIT,
-    AUDIO_FREQUENCY,
-    AUDIO_SIZE,
-    AUDIO_CHANNELS,
-    AUDIO_BUFFER,
-    SHOOT_SOUND_VOLUME,
-    TARGET_FPS,
-    BLINK_INTERVAL_MS,
-    BLINK_CYCLE_STATES,
-    MS_PER_SECOND,
-    INITIAL_DT,
-    INITIAL_SCORE,
-    SCREEN_CENTER_DIVISOR,
-    BLACK_COMPONENT,
-    TITLE_FONT_SIZE,
-    PROMPT_FONT_SIZE,
-    FINAL_SCORE_FONT_SIZE,
-    SCORE_FONT_SIZE,
-    TITLE_CENTER_OFFSET_Y,
-    SPLASH_PROMPT_CENTER_OFFSET_Y,
-    FINAL_SCORE_CENTER_OFFSET_Y,
-    GAMEOVER_PROMPT_CENTER_OFFSET_Y,
-    GAMEOVER_PROMPT_SIDE_OFFSET_X,
-    SCORE_OFFSET_RIGHT,
-    SCORE_OFFSET_TOP,
-    ORIGIN_X,
-    ORIGIN_Y,
-    DIM_ALPHA,
-)
+from constants import *
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
+from scores import init_db, get_best_score, save_best_score
 
 
 def main():
@@ -54,6 +22,7 @@ def main():
     pygame.time.Clock()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Asteroid conqueror")
 
     shoot_sound = pygame.mixer.Sound(ASSETS_DIR / "pew.wav")
     shoot_sound.set_volume(SHOOT_SOUND_VOLUME)
@@ -61,7 +30,7 @@ def main():
 
     ### Clock
     clock = pygame.time.Clock()
-    dt = INITIAL_DT
+    dt = 0.0
 
     ## Groups
     updatable = pygame.sprite.Group()
@@ -78,8 +47,8 @@ def main():
     Shot.containers = (shots, updatable, drawable)
     asteroid_field = AsteroidField()
     player = Player(
-        x=SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-        y=SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR,
+        x=SCREEN_WIDTH / 2,
+        y=SCREEN_HEIGHT / 2,
         shoot_sound=shoot_sound,
     )
 
@@ -98,36 +67,36 @@ def main():
 
     title_rect = title_surf.get_rect(
         center=(
-            SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-            SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + TITLE_CENTER_OFFSET_Y,
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + TITLE_CENTER_OFFSET_Y,
         )
     )
     prompt_rect = prompt_surf.get_rect(
         center=(
-            SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-            SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + SPLASH_PROMPT_CENTER_OFFSET_Y,
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + SPLASH_PROMPT_CENTER_OFFSET_Y,
         )
     )
 
     gameover_surf = title_font.render("GAME OVER", True, "white")
     gameover_rect = gameover_surf.get_rect(
         center=(
-            SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-            SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + TITLE_CENTER_OFFSET_Y,
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + TITLE_CENTER_OFFSET_Y,
         )
     )
     replay_surf = prompt_font.render("ENTER: REPLAY", True, "white")
     quit_surf = prompt_font.render("Q: QUIT", True, "white")
     replay_rect = replay_surf.get_rect(
         center=(
-            SCREEN_WIDTH / SCREEN_CENTER_DIVISOR - GAMEOVER_PROMPT_SIDE_OFFSET_X,
-            SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + GAMEOVER_PROMPT_CENTER_OFFSET_Y,
+            SCREEN_WIDTH / 2 - GAMEOVER_PROMPT_SIDE_OFFSET_X,
+            SCREEN_HEIGHT / 2 + GAMEOVER_PROMPT_CENTER_OFFSET_Y,
         )
     )
     quit_rect = quit_surf.get_rect(
         center=(
-            SCREEN_WIDTH / SCREEN_CENTER_DIVISOR + GAMEOVER_PROMPT_SIDE_OFFSET_X,
-            SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + GAMEOVER_PROMPT_CENTER_OFFSET_Y,
+            SCREEN_WIDTH / 2 + GAMEOVER_PROMPT_SIDE_OFFSET_X,
+            SCREEN_HEIGHT / 2 + GAMEOVER_PROMPT_CENTER_OFFSET_Y,
         )
     )
     final_score_font = pygame.font.Font(None, FINAL_SCORE_FONT_SIZE)
@@ -140,7 +109,7 @@ def main():
     splash_rect = splash_bg.get_rect(topleft=(ORIGIN_X, ORIGIN_Y))
     dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
     dim.fill(
-        (BLACK_COMPONENT, BLACK_COMPONENT, BLACK_COMPONENT, DIM_ALPHA)
+        (0, 0, 0, DIM_ALPHA)
     )  # transparent-to-opaque alpha range
 
     ##### GAME BACKGROUND
@@ -151,8 +120,12 @@ def main():
         screen.blit(prompt_surf, prompt_rect)
 
     ##### SCORE
-    score = INITIAL_SCORE
+    score = 0
     score_font = pygame.font.Font(None, SCORE_FONT_SIZE)
+
+    init_db()
+    best = get_best_score()
+    is_new_best = False
 
     #### GAME LOOP
     while True:
@@ -166,8 +139,9 @@ def main():
             if game_state == "splash":
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     game_state = "playing"
-                    score = INITIAL_SCORE
-                    dt = INITIAL_DT
+                    score = 0
+                    is_new_best = False
+                    dt = 0.0
             elif game_state == "gameover":
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_RETURN, pygame.K_r):
@@ -175,13 +149,14 @@ def main():
                             group.empty()
                         asteroid_field = AsteroidField()
                         player = Player(
-                            x=SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-                            y=SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR,
+                            x=SCREEN_WIDTH / 2,
+                            y=SCREEN_HEIGHT / 2,
                             shoot_sound=shoot_sound,
                         )
-                        score = INITIAL_SCORE
+                        score = 0
+                        is_new_best = False
                         game_state = "playing"
-                        dt = INITIAL_DT
+                        dt = 0.0
                     elif event.key in (pygame.K_q, pygame.K_ESCAPE):
                         return
         ## Screen fill
@@ -197,6 +172,26 @@ def main():
             # blit image here
             if blink_on:
                 screen.blit(prompt_surf, prompt_rect)
+            if is_new_best:
+                newbest_surf = final_score_font.render("NEW BEST!", True, "yellow")
+                newbest_rect = newbest_surf.get_rect(
+                    center=(
+                        SCREEN_WIDTH / 2,
+                        SCREEN_HEIGHT / 2 + BEST_CENTER_OFFSET_Y,
+                    )
+                )
+                screen.blit(newbest_surf, newbest_rect)
+            else:
+                splash_best_surf = final_score_font.render(
+                    f"BEST: {best}", True, "white"
+                )
+                splash_best_rect = splash_best_surf.get_rect(
+                    center=(
+                        SCREEN_WIDTH / 2,
+                        SCREEN_HEIGHT / 2 + BEST_CENTER_OFFSET_Y,
+                    )
+                )
+                screen.blit(splash_best_surf, splash_best_rect)
             updatable.update(dt)
         elif game_state == "playing":
             ### Playing
@@ -210,7 +205,11 @@ def main():
             ### Collision logic
             for asteroid in list(asteroids):
                 if asteroid.collides_with(player):
-                    log_event("player_hit")
+                    log_event("player_hit", score=score)
+                    if score > best:
+                        best = score
+                        save_best_score(best)
+                        is_new_best = True
                     game_state = "gameover"
                     break
                 for shot in list(shots):
@@ -226,6 +225,14 @@ def main():
                 topright=(SCREEN_WIDTH - SCORE_OFFSET_RIGHT, SCORE_OFFSET_TOP)
             )
             screen.blit(score_surf, score_rect)
+
+            live_best = max(best, score)
+            best_surf = score_font.render(f"BEST: {live_best}", True, "white")
+            best_rect = best_surf.get_rect(
+                topright=(SCREEN_WIDTH - SCORE_OFFSET_RIGHT,
+                        SCORE_OFFSET_TOP + SCORE_FONT_SIZE + 8)
+            )
+            screen.blit(best_surf, best_rect)
         else:  # gameover
             screen.blit(splash_bg, splash_rect)
             screen.blit(dim, (ORIGIN_X, ORIGIN_Y))
@@ -236,11 +243,27 @@ def main():
             final_surf = final_score_font.render(f"FINAL SCORE: {score}", True, "white")
             final_rect = final_surf.get_rect(
                 center=(
-                    SCREEN_WIDTH / SCREEN_CENTER_DIVISOR,
-                    SCREEN_HEIGHT / SCREEN_CENTER_DIVISOR + FINAL_SCORE_CENTER_OFFSET_Y,
+                    SCREEN_WIDTH / 2,
+                    SCREEN_HEIGHT / 2 + FINAL_SCORE_CENTER_OFFSET_Y,
                 )
             )
             screen.blit(final_surf, final_rect)
+
+            if is_new_best:
+                gameover_best_surf = final_score_font.render(
+                    "NEW BEST!", True, "yellow"
+                )
+            else:
+                gameover_best_surf = final_score_font.render(
+                    f"BEST: {best}", True, "white"
+                )
+            gameover_best_rect = gameover_best_surf.get_rect(
+                center=(
+                    SCREEN_WIDTH / 2,
+                    SCREEN_HEIGHT / 2 + BEST_CENTER_OFFSET_Y,
+                )
+            )
+            screen.blit(gameover_best_surf, gameover_best_rect)
 
             screen.blit(replay_surf, replay_rect)
             screen.blit(quit_surf, quit_rect)

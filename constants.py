@@ -1,7 +1,6 @@
 from pathlib import Path
 import sys
 
-
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 
@@ -18,10 +17,12 @@ PLAYER_INITIAL_ROTATION = 0
 PLAYER_INITIAL_COOLDOWN_TIMER = 0
 COOLDOWN_READY_THRESHOLD = 0
 
+
 def _base_path() -> Path:
     if getattr(sys, "frozen", False):
-        return Path(sys._MEIPASS) #type: ignore
+        return Path(sys._MEIPASS)  # type: ignore
     return Path(__file__).parent
+
 
 BASE_DIR = _base_path()
 
@@ -56,10 +57,6 @@ TARGET_FPS = 60
 BLINK_INTERVAL_MS = 500
 BLINK_CYCLE_STATES = 2
 MS_PER_SECOND = 1000
-INITIAL_DT = 0.0
-INITIAL_SCORE = 0
-SCREEN_CENTER_DIVISOR = 2
-BLACK_COMPONENT = 0
 
 ### FONTS
 TITLE_FONT_SIZE = 120
@@ -70,6 +67,7 @@ SCORE_FONT_SIZE = 36
 ### LAYOUT OFFSETS (pixels, relative to screen center unless noted)
 TITLE_CENTER_OFFSET_Y = -50
 SPLASH_PROMPT_CENTER_OFFSET_Y = 80
+BEST_CENTER_OFFSET_Y = 150
 FINAL_SCORE_CENTER_OFFSET_Y = 100
 GAMEOVER_PROMPT_CENTER_OFFSET_Y = 200
 GAMEOVER_PROMPT_SIDE_OFFSET_X = 250
