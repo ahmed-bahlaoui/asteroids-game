@@ -108,9 +108,7 @@ def main():
     splash_bg = pygame.transform.smoothscale(splash_raw, (SCREEN_WIDTH, SCREEN_HEIGHT))
     splash_rect = splash_bg.get_rect(topleft=(ORIGIN_X, ORIGIN_Y))
     dim = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-    dim.fill(
-        (0, 0, 0, DIM_ALPHA)
-    )  # transparent-to-opaque alpha range
+    dim.fill((0, 0, 0, DIM_ALPHA))  # transparent-to-opaque alpha range
 
     ##### GAME BACKGROUND
     game_bg_raw = pygame.image.load(ASSETS_DIR / "background.png").convert()
@@ -229,8 +227,10 @@ def main():
             live_best = max(best, score)
             best_surf = score_font.render(f"BEST: {live_best}", True, "white")
             best_rect = best_surf.get_rect(
-                topright=(SCREEN_WIDTH - SCORE_OFFSET_RIGHT,
-                        SCORE_OFFSET_TOP + SCORE_FONT_SIZE + 8)
+                topright=(
+                    SCREEN_WIDTH - SCORE_OFFSET_RIGHT,
+                    SCORE_OFFSET_TOP + SCORE_FONT_SIZE + 8,
+                )
             )
             screen.blit(best_surf, best_rect)
         else:  # gameover
