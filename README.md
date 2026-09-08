@@ -33,3 +33,8 @@ uv sync
 ```bash
 uv run main.py
 ```
+
+
+TODO:
+- Add a sqlite database to keep track of the best score
+- Add a time duration to have game stats

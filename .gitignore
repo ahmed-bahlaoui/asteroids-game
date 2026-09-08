@@ -16,3 +16,7 @@ dist/
 # Game state
 game_state.jsonl
 game_events.jsonl
+
+
+## Database
+*.db
